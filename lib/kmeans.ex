@@ -12,7 +12,7 @@ defmodule Kmeans do
     Enum.min_by(centroids, &(distance(&1, {x, y})))
   end
 
-  defp clusters(centroids, points) do
+  def clusters(centroids, points) do
     points
     |> Enum.group_by(&closest(&1, centroids))
   end

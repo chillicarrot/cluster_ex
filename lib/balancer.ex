@@ -4,9 +4,13 @@ defmodule ClusterEx.Balancer do
 
   def balance_clusters(clusters, 0), do: clusters
   def balance_clusters(clusters, limit \\ 20) do
+    centroids = Map.keys(clusters)
     vacancies = find_vacant_clusters(clusters)
     overloads = find_overloaded_clusters(clusters)
-    new_clusters = balance(clusters, vacancies, overloads)
+    points = balance(clusters, vacancies, overloads)
+    |> Enum.map(fn {_, points} -> points end)
+    |> List.flatten
+    new_clusters = Kmeans.clusters(centroids, points)
     balance_clusters(new_clusters, limit - 1)
   end
 
@@ -28,11 +32,13 @@ defmodule ClusterEx.Balancer do
       true -> [{{ec, ecp}, extra - transfers} | erest]
       _ -> erest
     end
+    |> Enum.sort_by(fn {{_, _}, i} -> i end)
 
     vacancies = case transfers < vacant do
       true -> [{{vc, vcp}, vacant - transfers} | vrest]
       _ -> vrest
     end
+    |> Enum.sort_by(fn {{_, _}, i} -> i end)
 
     new_clusters = clusters
     |> put_in([vc], vcp)
@@ -63,7 +69,7 @@ defmodule ClusterEx.Balancer do
     clusters
     |> Enum.map(fn {centroid, points} ->
       l = length(points)
-      e = l - (@soft_limit + @max_extra_points)
+      e = l - (@soft_limit - @max_extra_points)
       cond do
         e > 0 -> {{centroid, points}, e}
         true -> nil
