@@ -59,7 +59,7 @@ defmodule ClusterEx.Balancer do
     vacant_centroids
     |> Enum.map(fn c ->
         {_, transfers} = Enum.find(vacancies, fn {{vc, _}, _} -> vc == c end)
-        transfers = transfers/2
+        transfers = div(transfers, 2)
         {c, distance_data
         |> Enum.map(fn {p, d} ->
             {p, Enum.find(d, fn {vc, _} -> vc == c end)}
