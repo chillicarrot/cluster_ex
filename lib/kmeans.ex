@@ -43,12 +43,18 @@ defmodule Kmeans do
 
   def run(points, k, iterations) do
     centroids = points
-    |> Enum.take(k)
+    |> Enum.uniq
+    |> Enum.take_random(k)
     |> Enum.map(fn {_, p} -> p end)
 
-    points
+    data = points
     |> step(iterations, centroids)
     |> clusters(points)
+
+    case data |> Enum.into([]) |> length == k do
+      false -> run(points, k, iterations)
+      true -> data
+    end
   end
 
 end

@@ -1,10 +1,10 @@
 defmodule ClusterEx do
   alias ClusterEx.Balancer
 
-  def cluster(points, clusters \\ 3) do
+  def cluster(points, opts) do
     points
-    |> Kmeans.run(clusters, 10)
-    |> Balancer.balance_clusters
+    |> Kmeans.run(opts[:clusters], 10)
+    |> Balancer.balance_clusters(opts)
   end
 
   def raw_data(clusters) do
